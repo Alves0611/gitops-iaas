@@ -1,0 +1,32 @@
+apiVersion: eks.aws.upbound.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${{ values.name }}-cluster
+  labels:
+    environment: ${{ values.environment }}
+    managed-by: crossplane
+spec:
+  forProvider:
+    region: ${{ values.region }}
+    version: "${{ values.kubernetesVersion }}"
+    roleArnRef:
+      name: ${{ values.name }}-cluster-role
+    accessConfig:
+      - authenticationMode: API_AND_CONFIG_MAP
+        bootstrapClusterCreatorAdminPermissions: true
+    vpcConfig:
+      - subnetIdRefs:
+          - name: ${{ values.privateSubnet1Name }}
+          - name: ${{ values.privateSubnet2Name }}
+    enabledClusterLogTypes:
+      - audit
+      - api
+      - authenticator
+      - controllerManager
+      - scheduler
+    tags:
+      Name: ${{ values.name }}-cluster
+      Environment: ${{ values.environment }}
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: default
