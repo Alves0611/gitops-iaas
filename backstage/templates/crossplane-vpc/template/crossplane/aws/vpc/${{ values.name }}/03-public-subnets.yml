@@ -1,0 +1,47 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: ${{ values.name }}-public-subnet-1
+  labels:
+    environment: ${{ values.environment }}
+    managed-by: crossplane
+    type: public
+spec:
+  forProvider:
+    region: ${{ values.region }}
+    vpcIdRef:
+      name: ${{ values.name }}-vpc
+    cidrBlock: "${{ values.publicSubnet1Cidr }}"
+    availabilityZone: "${{ values.az1 }}"
+    mapPublicIpOnLaunch: true
+    tags:
+      Name: ${{ values.name }}-public-subnet-1
+      Environment: ${{ values.environment }}
+      Type: public
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: default
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: ${{ values.name }}-public-subnet-2
+  labels:
+    environment: ${{ values.environment }}
+    managed-by: crossplane
+    type: public
+spec:
+  forProvider:
+    region: ${{ values.region }}
+    vpcIdRef:
+      name: ${{ values.name }}-vpc
+    cidrBlock: "${{ values.publicSubnet2Cidr }}"
+    availabilityZone: "${{ values.az2 }}"
+    mapPublicIpOnLaunch: true
+    tags:
+      Name: ${{ values.name }}-public-subnet-2
+      Environment: ${{ values.environment }}
+      Type: public
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: default
