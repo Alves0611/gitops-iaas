@@ -1,0 +1,127 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: crossplane-vpc
+  title: Create Crossplane VPC
+  description: Creates a VPC stack in AWS via Crossplane, opening a pull request to the crossplane-argocd repo
+  tags:
+    - aws
+    - crossplane
+    - vpc
+    - infrastructure
+spec:
+  owner: user:default/Alves0611
+  type: infrastructure
+  parameters:
+    - title: VPC Stack Info
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Stack Name
+          type: string
+          description: "Name for the VPC stack (lowercase, hyphens allowed)"
+          pattern: "^[a-z0-9-]+$"
+          ui:autofocus: true
+        owner:
+          title: Owner
+          type: string
+          default: user:default/Alves0611
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind:
+                - User
+                - Group
+        region:
+          title: AWS Region
+          type: string
+          description: AWS region for the VPC
+          default: us-east-1
+          enum:
+            - us-east-1
+            - us-east-2
+            - us-west-2
+            - eu-west-1
+            - sa-east-1
+        environment:
+          title: Environment
+          type: string
+          description: Target environment
+          default: dev
+          enum:
+            - dev
+            - staging
+            - prod
+    - title: Network Configuration
+      properties:
+        vpcCidr:
+          title: VPC CIDR Block
+          type: string
+          description: CIDR block for the VPC
+          default: "10.0.0.0/16"
+        publicSubnet1Cidr:
+          title: Public Subnet 1 CIDR
+          type: string
+          default: "10.0.1.0/24"
+        publicSubnet2Cidr:
+          title: Public Subnet 2 CIDR
+          type: string
+          default: "10.0.2.0/24"
+        privateSubnet1Cidr:
+          title: Private Subnet 1 CIDR
+          type: string
+          default: "10.0.10.0/24"
+        privateSubnet2Cidr:
+          title: Private Subnet 2 CIDR
+          type: string
+          default: "10.0.20.0/24"
+        az1:
+          title: Availability Zone 1
+          type: string
+          description: First availability zone
+          default: "us-east-1a"
+        az2:
+          title: Availability Zone 2
+          type: string
+          description: Second availability zone
+          default: "us-east-1b"
+  steps:
+    - id: fetch-template
+      name: Fetch Crossplane VPC Files
+      action: fetch:template
+      input:
+        url: ./template
+        values:
+          name: ${{ parameters.name }}
+          region: ${{ parameters.region }}
+          environment: ${{ parameters.environment }}
+          vpcCidr: ${{ parameters.vpcCidr }}
+          publicSubnet1Cidr: ${{ parameters.publicSubnet1Cidr }}
+          publicSubnet2Cidr: ${{ parameters.publicSubnet2Cidr }}
+          privateSubnet1Cidr: ${{ parameters.privateSubnet1Cidr }}
+          privateSubnet2Cidr: ${{ parameters.privateSubnet2Cidr }}
+          az1: ${{ parameters.az1 }}
+          az2: ${{ parameters.az2 }}
+    - id: publish-pr
+      name: Open Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?owner=Alves0611&repo=crossplane-argocd
+        branchName: feature/crossplane-vpc-${{ parameters.name }}
+        title: "feat: add Crossplane VPC stack ${{ parameters.name }}"
+        description: |
+          This PR was created by the Backstage Crossplane VPC template.
+
+          **Stack:** ${{ parameters.name }}
+          **Region:** ${{ parameters.region }}
+          **Environment:** ${{ parameters.environment }}
+          **VPC CIDR:** ${{ parameters.vpcCidr }}
+          **Public Subnets:** ${{ parameters.publicSubnet1Cidr }}, ${{ parameters.publicSubnet2Cidr }}
+          **Private Subnets:** ${{ parameters.privateSubnet1Cidr }}, ${{ parameters.privateSubnet2Cidr }}
+          **AZs:** ${{ parameters.az1 }}, ${{ parameters.az2 }}
+  output:
+    links:
+      - title: Pull Request
+        url: ${{ steps['publish-pr'].output.remoteUrl }}
