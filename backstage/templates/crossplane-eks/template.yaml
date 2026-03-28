@@ -1,0 +1,170 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: crossplane-eks
+  title: Create Crossplane EKS Cluster
+  description: Creates an EKS cluster stack in AWS via Crossplane, opening a pull request to the crossplane-argocd repo
+  tags:
+    - aws
+    - crossplane
+    - eks
+    - kubernetes
+    - infrastructure
+spec:
+  owner: user:default/Alves0611
+  type: infrastructure
+  parameters:
+    - title: Cluster Info
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Stack Name
+          type: string
+          description: "Name for the EKS stack (lowercase, hyphens allowed)"
+          pattern: "^[a-z0-9-]+$"
+          ui:autofocus: true
+        owner:
+          title: Owner
+          type: string
+          default: user:default/Alves0611
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind:
+                - User
+                - Group
+        region:
+          title: AWS Region
+          type: string
+          description: AWS region for the EKS cluster
+          default: us-east-1
+          enum:
+            - us-east-1
+            - us-east-2
+            - us-west-2
+            - eu-west-1
+            - sa-east-1
+        environment:
+          title: Environment
+          type: string
+          description: Target environment
+          default: dev
+          enum:
+            - dev
+            - staging
+            - prod
+    - title: Network Reference
+      required:
+        - vpcName
+        - privateSubnet1Name
+        - privateSubnet2Name
+      properties:
+        vpcName:
+          title: VPC Name
+          type: string
+          description: "Name of the existing Crossplane VPC (e.g. crossplane-vpc)"
+        privateSubnet1Name:
+          title: Private Subnet 1 Name
+          type: string
+          description: "Name of the first private subnet (e.g. crossplane-private-subnet-1)"
+        privateSubnet2Name:
+          title: Private Subnet 2 Name
+          type: string
+          description: "Name of the second private subnet (e.g. crossplane-private-subnet-2)"
+    - title: Cluster Configuration
+      properties:
+        kubernetesVersion:
+          title: Kubernetes Version
+          type: string
+          description: EKS Kubernetes version
+          default: "1.33"
+          enum:
+            - "1.34"
+            - "1.33"
+            - "1.32"
+            - "1.31"
+        instanceType:
+          title: Instance Type
+          type: string
+          description: EC2 instance type for worker nodes
+          default: t3.medium
+          enum:
+            - t3.micro
+            - t3.small
+            - t3.medium
+            - t3.large
+            - m5.large
+        capacityType:
+          title: Capacity Type
+          type: string
+          description: Node group capacity type
+          default: ON_DEMAND
+          enum:
+            - ON_DEMAND
+            - SPOT
+        desiredNodes:
+          title: Desired Nodes
+          type: number
+          description: Desired number of worker nodes
+          default: 2
+          ui:widget: range
+          minimum: 1
+          maximum: 10
+        minNodes:
+          title: Minimum Nodes
+          type: number
+          description: Minimum number of worker nodes
+          default: 1
+          minimum: 1
+          maximum: 10
+        maxNodes:
+          title: Maximum Nodes
+          type: number
+          description: Maximum number of worker nodes
+          default: 3
+          minimum: 1
+          maximum: 10
+  steps:
+    - id: fetch-template
+      name: Fetch Crossplane EKS Files
+      action: fetch:template
+      input:
+        url: ./template
+        values:
+          name: ${{ parameters.name }}
+          region: ${{ parameters.region }}
+          environment: ${{ parameters.environment }}
+          vpcName: ${{ parameters.vpcName }}
+          privateSubnet1Name: ${{ parameters.privateSubnet1Name }}
+          privateSubnet2Name: ${{ parameters.privateSubnet2Name }}
+          kubernetesVersion: ${{ parameters.kubernetesVersion }}
+          instanceType: ${{ parameters.instanceType }}
+          capacityType: ${{ parameters.capacityType }}
+          desiredNodes: ${{ parameters.desiredNodes }}
+          minNodes: ${{ parameters.minNodes }}
+          maxNodes: ${{ parameters.maxNodes }}
+    - id: publish-pr
+      name: Open Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?owner=Alves0611&repo=crossplane-argocd
+        branchName: feature/crossplane-eks-${{ parameters.name }}
+        title: "feat: add Crossplane EKS stack ${{ parameters.name }}"
+        description: |
+          This PR was created by the Backstage Crossplane EKS template.
+
+          **Stack:** ${{ parameters.name }}
+          **Region:** ${{ parameters.region }}
+          **Environment:** ${{ parameters.environment }}
+          **Kubernetes Version:** ${{ parameters.kubernetesVersion }}
+          **Instance Type:** ${{ parameters.instanceType }}
+          **Capacity Type:** ${{ parameters.capacityType }}
+          **Nodes:** ${{ parameters.desiredNodes }} desired (${{ parameters.minNodes }}-${{ parameters.maxNodes }})
+          **VPC Reference:** ${{ parameters.vpcName }}
+          **Subnets:** ${{ parameters.privateSubnet1Name }}, ${{ parameters.privateSubnet2Name }}
+  output:
+    links:
+      - title: Pull Request
+        url: ${{ steps['publish-pr'].output.remoteUrl }}
