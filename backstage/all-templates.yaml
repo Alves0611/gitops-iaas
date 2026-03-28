@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: crossplane-templates
+  description: Crossplane infrastructure templates for Backstage
+spec:
+  targets:
+    - ./templates/crossplane-vpc/template.yaml
+    - ./templates/crossplane-eks/template.yaml
+    - ./templates/crossplane-s3/template.yaml
