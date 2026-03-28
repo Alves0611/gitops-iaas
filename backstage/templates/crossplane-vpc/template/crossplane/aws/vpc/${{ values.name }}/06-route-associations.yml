@@ -1,0 +1,67 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: ${{ values.name }}-public-subnet-1-association
+  labels:
+    environment: ${{ values.environment }}
+    managed-by: crossplane
+spec:
+  forProvider:
+    region: ${{ values.region }}
+    subnetIdRef:
+      name: ${{ values.name }}-public-subnet-1
+    routeTableIdRef:
+      name: ${{ values.name }}-public-rt
+  providerConfigRef:
+    name: default
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: ${{ values.name }}-public-subnet-2-association
+  labels:
+    environment: ${{ values.environment }}
+    managed-by: crossplane
+spec:
+  forProvider:
+    region: ${{ values.region }}
+    subnetIdRef:
+      name: ${{ values.name }}-public-subnet-2
+    routeTableIdRef:
+      name: ${{ values.name }}-public-rt
+  providerConfigRef:
+    name: default
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: ${{ values.name }}-private-subnet-1-association
+  labels:
+    environment: ${{ values.environment }}
+    managed-by: crossplane
+spec:
+  forProvider:
+    region: ${{ values.region }}
+    subnetIdRef:
+      name: ${{ values.name }}-private-subnet-1
+    routeTableIdRef:
+      name: ${{ values.name }}-private-rt
+  providerConfigRef:
+    name: default
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: ${{ values.name }}-private-subnet-2-association
+  labels:
+    environment: ${{ values.environment }}
+    managed-by: crossplane
+spec:
+  forProvider:
+    region: ${{ values.region }}
+    subnetIdRef:
+      name: ${{ values.name }}-private-subnet-2
+    routeTableIdRef:
+      name: ${{ values.name }}-private-rt
+  providerConfigRef:
+    name: default
