@@ -1,0 +1,82 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: crossplane-azure-rg
+  title: Create Crossplane Azure Resource Group
+  description: Creates an Azure Resource Group via Crossplane, opening a pull request to the gitops-crossplane repo
+  tags:
+    - azure
+    - crossplane
+    - resource-group
+    - infrastructure
+spec:
+  owner: user:default/Alves0611
+  type: infrastructure
+  parameters:
+    - title: Resource Group Info
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Stack Name
+          type: string
+          description: "Name for the Resource Group stack (lowercase, hyphens allowed)"
+          pattern: "^[a-z0-9-]+$"
+          ui:autofocus: true
+        owner:
+          title: Owner
+          type: string
+          default: user:default/Alves0611
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind:
+                - User
+                - Group
+        region:
+          title: Azure Region
+          type: string
+          description: Azure region for the Resource Group
+          default: eastus
+          enum:
+            - eastus
+            - eastus2
+            - westus2
+            - brazilsouth
+        environment:
+          title: Environment
+          type: string
+          description: Target environment
+          default: dev
+          enum:
+            - dev
+            - hml
+            - prd
+  steps:
+    - id: fetch-template
+      name: Fetch Crossplane Azure Resource Group Files
+      action: fetch:template
+      input:
+        url: ./template
+        values:
+          name: ${{ parameters.name }}
+          region: ${{ parameters.region }}
+          environment: ${{ parameters.environment }}
+    - id: publish-pr
+      name: Open Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?owner=Alves0611&repo=gitops-crossplane
+        branchName: feature/crossplane-azure-rg-${{ parameters.name }}
+        title: "feat: add Crossplane Azure Resource Group ${{ parameters.name }}"
+        description: |
+          This PR was created by the Backstage Crossplane Azure Resource Group template.
+
+          **Stack:** ${{ parameters.name }}
+          **Region:** ${{ parameters.region }}
+          **Environment:** ${{ parameters.environment }}
+  output:
+    links:
+      - title: Pull Request
+        url: ${{ steps['publish-pr'].output.remoteUrl }}
