@@ -1,8 +1,8 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: crossplane-eks
-  title: Create Crossplane EKS Cluster
+  name: crossplane-aws-eks
+  title: Create Crossplane AWS EKS Cluster
   description: Creates an EKS cluster stack in AWS via Crossplane, opening a pull request to the gitops-crossplane repo
   tags:
     - aws
@@ -150,7 +150,7 @@ spec:
       action: publish:github:pull-request
       input:
         repoUrl: github.com?owner=Alves0611&repo=gitops-crossplane
-        branchName: feature/crossplane-eks-${{ parameters.name }}
+        branchName: feature/crossplane-aws-eks-${{ parameters.name }}
         title: "feat: add Crossplane EKS stack ${{ parameters.name }}"
         description: |
           This PR was created by the Backstage Crossplane EKS template.
